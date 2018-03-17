@@ -25,15 +25,15 @@ let app = express();
 //set up handlebars
 
 
-var exphbs = require('express-handlebars').create({
-    layoutsDir: path.join(__dirname, "views/layouts"),
-    defaultLayout: 'main',
-    extname: 'hbs'
-  });
+// var exphbs = require('express-handlebars').create({
+//     layoutsDir: path.join(__dirname, "views/layouts"),
+//     defaultLayout: 'main',
+//     extname: 'hbs'
+//   });
   
-  app.engine('exphbs', exphbs.engine);
-  app.set('view engine', 'exphbs');
-  app.set('views', path.join(__dirname, "views"));
+//   app.engine('exphbs', exphbs.engine);
+//   app.set('view engine', 'exphbs');
+//   app.set('views', path.join(__dirname, "views"));
   
 
   
