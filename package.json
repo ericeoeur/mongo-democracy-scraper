@@ -2,7 +2,7 @@
   "name": "mongo-democracy-scraper",
   "version": "1.0.0",
   "description": "This application will pull article titles from the Democracy Now! Website: http://www.democracynow.org",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
       "start": "node server.js"
