@@ -1,4 +1,4 @@
-let express = require("express"); 
+let express = require("express");
 let bodyParser = require("body-parser");
 let handlebars = require("express-handlebars");
 let mongoose = require("mongoose");
@@ -14,15 +14,17 @@ let db = require("./models");
 
 
 //set up port 
-const PORT = 3000; 
+const PORT = 3000;
 
 
 //initialize express 
-let app = express(); 
+let app = express();
 
 
 //Body-Parser to handle form submits
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 
 //express.static to serve as the public folder as a static directory
 app.use(express.static("public"));
@@ -31,54 +33,63 @@ app.use(express.static("public"));
 
 let MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongo-democracy-scraper";
 
-mongoose.Promise = Promise; 
+mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI, {
-    //useMongoClient: true 
+    useMongoClient: true
 });
 
 
+app.get("/scrape", function (req, res) {
 
-//This makes a request to grab the HTML from the Austin Monitor website. 
-request("http://www.austinmonitor.com", function (err, res, html) {
-    if (!err && res.statusCode == 200) {
+    //This makes a request to grab the HTML from the Austin Monitor website. 
+    request("http://www.austinmonitor.com", function (err, response, html) {
+        if (!err && response.statusCode == 200) {
 
-        //$ is shorthand for cheerio | this loads the HTML into cheerio 
-        let $ = cheerio.load(html);
-       // var a = $(this).prev();
+            //$ is shorthand for cheerio | this loads the HTML into cheerio 
+            let $ = cheerio.load(html);
 
-        //this is where we are storing our array of data from AustinMonitor.com 
+            //this is where we are storing our array of data from AustinMonitor.com 
+            let results = [];
 
-        let results = [];
-        let results2 = [];
+            //Grabs information form this particular H1 Tag and places them in variables. 
+            $("div.wrapper").each(function (i, element) {
 
+                //elements of the div.wrapper which contains info about all the articles 
+                let title = $(element).children('h1').text();
+                let link = $(element).children('h1').children('a').attr('href');
+                let summary = $(element).children('.entry-summary').text();
+                let dateAuthor = $(element).children('.posted').text();
+                let category = $(element).children('.cat-links').text();
 
-        //Grabs information form this particular H1 Tag and places them in variables. 
-        $("div.wrapper").each(function (i, element) {
+                //pushes it to the results array. 
+                results.push({
+                    title: title,
+                    link: link,
+                    summary: summary,
+                    dateAuthor: dateAuthor,
+                    category: category
+                });
 
-            //elements of the div.wrapper which contains info about all the articles 
-            let title = $(element).children('h1').text();
-            let link = $(element).children('h1').children('a').attr('href'); 
-            let summary = $(element).children('.entry-summary').text(); 
-            let dateAuthor = $(element).children('.posted').text(); 
-            let category =  $(element).children('.cat-links').text(); 
-        
-            //pushes it to the results array. 
-            results.push({
-                title: title,
-                link: link,
-                summary: summary,
-                dateAuthor: dateAuthor,
-                cateogry: category
+                db.Headline.create(results).then(function (dbHeadline) { //this is not working bc we need to define our models
+                        console.log(dbHeadline);
+                    })
+                    .catch(function (err) {
+                        return res.json(err);
+                    });
+
             });
 
-        });
+            res.send("Scraping is complete!");
 
-        console.log(results);
-        
-    }
+            console.log(results);
+
+        }
+
+    });
+
 });
 
 // Start the server
-app.listen(PORT, function() {
+app.listen(PORT, function () {
     console.log("Mongo Democracy Scraper is running on port " + PORT + "!");
-  });
+});
